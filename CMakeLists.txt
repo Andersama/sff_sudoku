@@ -3,7 +3,7 @@
 #
 cmake_minimum_required (VERSION 3.8)
 
-project ("lc_sudoku_solver")
+project ("sff_sudoku_solver")
 
 # Include sub-projects.
-add_subdirectory ("lc_sudoku_solver")
+add_subdirectory ("sff_sudoku_solver")
