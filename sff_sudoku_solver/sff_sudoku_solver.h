@@ -91,14 +91,7 @@ public:
 			return;
 		if (board[0].size() != board.size())
 			return;
-		/*
-		for (size_t y = 0; y < board.size(); y++) {
-			for (size_t x = 0; x < board[0].size(); x++) {
-				std::cout << board[y][x] << ' ';
-			}
-			std::cout << '\n';
-		}
-		*/
+
 		std::vector<Selection> selections;
 		uint32_t board_len = board.size();
 		uint32_t blk_len = std::sqrt(board_len);
@@ -147,11 +140,6 @@ public:
 					*y_cached = 1;
 					*x_cached = 1;
 					*b_cached = 1;
-					/*
-					selection_cache[(0 * cache_size) + (y * (board_width + 1)) + digit] = 1;
-					selection_cache[(1 * cache_size) + (x * (board_width + 1)) + digit] = 1;
-					selection_cache[(2 * cache_size) + (b * (board_width + 1)) + digit] = 1;
-					*/
 				}
 				else {
 					//fill in w/ 0 for unselected
@@ -171,42 +159,6 @@ public:
 			return lhs.value > 0;
 			});
 		//sort all unknown values by # of choices available lower -> better, ergo more marks -> better
-#if 0
-		std::sort(selections.begin() + known_locations, selections.end(), [&selection_cache, cache_size, board_len](Selection& lhs, Selection& rhs) {
-			size_t lhs_marks = 0;
-			size_t rhs_marks = 0;
-			uint32_t cache_width = board_len + 1;
-			//we can ignore 0 b/c it's the throw away index
-			uint8_t* y_lhs = &selection_cache[(0 * cache_size) + (lhs.row * (cache_width))];
-			uint8_t* x_lhs = &selection_cache[(1 * cache_size) + (lhs.col * (cache_width))];
-			uint8_t* b_lhs = &selection_cache[(2 * cache_size) + (lhs.blk * (cache_width))];
-			uint8_t* y_rhs = &selection_cache[(0 * cache_size) + (rhs.row * (cache_width))];
-			uint8_t* x_rhs = &selection_cache[(1 * cache_size) + (rhs.col * (cache_width))];
-			uint8_t* b_rhs = &selection_cache[(2 * cache_size) + (rhs.blk * (cache_width))];
-
-			for (uint32_t digit = 1; digit < cache_width; digit++) {
-				lhs_marks += (y_lhs[digit] || x_lhs[digit] || b_lhs[digit]);
-				rhs_marks += (y_rhs[digit] || x_rhs[digit] || b_rhs[digit]);
-				/*
-				{
-					uint8_t* y_cached = &selection_cache[(0 * cache_size) + (lhs.row * (cache_width)) + digit];
-					uint8_t* x_cached = &selection_cache[(1 * cache_size) + (lhs.col * (cache_width)) + digit];
-					uint8_t* b_cached = &selection_cache[(2 * cache_size) + (lhs.blk * (cache_width)) + digit];
-
-					lhs_marks += *y_cached || *x_cached || *b_cached;
-				}
-				{
-					uint8_t* y_cached = &selection_cache[(0 * cache_size) + (rhs.row * (cache_width)) + digit];
-					uint8_t* x_cached = &selection_cache[(1 * cache_size) + (rhs.col * (cache_width)) + digit];
-					uint8_t* b_cached = &selection_cache[(2 * cache_size) + (rhs.blk * (cache_width)) + digit];
-
-					rhs_marks += *y_cached || *x_cached || *b_cached;
-				}
-				*/
-			}
-			return rhs_marks < lhs_marks;
-			});
-#endif
 		/*
 		update counts at locations once
 		*/
@@ -227,39 +179,7 @@ public:
 			size_t rhs_marks = 0;
 			lhs_marks = selection_cache[(3 * cache_size) + (lhs.row * board_len) + lhs.col];
 			rhs_marks = selection_cache[(3 * cache_size) + (rhs.row * board_len) + rhs.col];
-			/*
-			uint32_t cache_width = board_len + 1;
-			//we can ignore 0 b/c it's the throw away index
-			uint8_t* y_lhs = &selection_cache[(0 * cache_size) + (lhs.row * (cache_width))];
-			uint8_t* x_lhs = &selection_cache[(1 * cache_size) + (lhs.col * (cache_width))];
-			uint8_t* b_lhs = &selection_cache[(2 * cache_size) + (lhs.blk * (cache_width))];
-			uint8_t* y_rhs = &selection_cache[(0 * cache_size) + (rhs.row * (cache_width))];
-			uint8_t* x_rhs = &selection_cache[(1 * cache_size) + (rhs.col * (cache_width))];
-			uint8_t* b_rhs = &selection_cache[(2 * cache_size) + (rhs.blk * (cache_width))];
 
-			for (uint32_t digit = 1; digit < cache_width; digit++) {
-				lhs_marks += (y_lhs[digit] || x_lhs[digit] || b_lhs[digit]);
-				rhs_marks += (y_rhs[digit] || x_rhs[digit] || b_rhs[digit]);
-			}
-			*/
-			/*
-			for (uint32_t digit = 1; digit < (board_len + 1); digit++) {
-				{
-					uint8_t* y_cached = &selection_cache[(0 * cache_size) + (lhs.row * (cache_width)) + digit];
-					uint8_t* x_cached = &selection_cache[(1 * cache_size) + (lhs.col * (cache_width)) + digit];
-					uint8_t* b_cached = &selection_cache[(2 * cache_size) + (lhs.blk * (cache_width)) + digit];
-
-					lhs_marks += *y_cached || *x_cached || *b_cached;
-				}
-				{
-					uint8_t* y_cached = &selection_cache[(0 * cache_size) + (rhs.row * (cache_width)) + digit];
-					uint8_t* x_cached = &selection_cache[(1 * cache_size) + (rhs.col * (cache_width)) + digit];
-					uint8_t* b_cached = &selection_cache[(2 * cache_size) + (rhs.blk * (cache_width)) + digit];
-
-					rhs_marks += *y_cached || *x_cached || *b_cached;
-				}
-			}
-			*/
 			return rhs_marks < lhs_marks;
 			});
 		if (known_locations < selections.size()) {
@@ -336,26 +256,6 @@ public:
 				lhs_marks = selection_cache[(3 * cache_size) + ((uint32_t)lhs.row * board_len) + lhs.col];
 				rhs_marks = selection_cache[(3 * cache_size) + ((uint32_t)rhs.row * board_len) + rhs.col];
 
-				/*
-				uint32_t cache_width = board_len + 1;
-				//we can ignore 0 b/c it's the throw away index
-				for (uint32_t digit = 1; digit < (board_len + 1); digit++) {
-					{
-						uint8_t* y_cached = &selection_cache[(0 * cache_size) + (lhs.row * (cache_width)) + digit];
-						uint8_t* x_cached = &selection_cache[(1 * cache_size) + (lhs.col * (cache_width)) + digit];
-						uint8_t* b_cached = &selection_cache[(2 * cache_size) + (lhs.blk * (cache_width)) + digit];
-
-						lhs_marks += *y_cached || *x_cached || *b_cached;
-					}
-					{
-						uint8_t* y_cached = &selection_cache[(0 * cache_size) + (rhs.row * (cache_width)) + digit];
-						uint8_t* x_cached = &selection_cache[(1 * cache_size) + (rhs.col * (cache_width)) + digit];
-						uint8_t* b_cached = &selection_cache[(2 * cache_size) + (rhs.blk * (cache_width)) + digit];
-
-						rhs_marks += *y_cached || *x_cached || *b_cached;
-					}
-				}
-				*/
 				return rhs_marks < lhs_marks;
 				});
 			if (index >= selections.size()) {
@@ -363,24 +263,11 @@ public:
 			}
 			std::swap(selections[index], *it);
 		}
-		/*
-		std::sort(selections.begin(), selections.end(), [board_len](Selection& lhs, Selection& rhs) {
-			return (lhs.row * board_len + lhs.col) < (rhs.row * board_len + rhs.col);
-		});
-		*/
 		//write out to puzzle
 		for (size_t i = 0; i < selections.size(); i++) {
 			Selection pick = selections[i];
 			board[pick.row][pick.col] = (uint8_t)pick.value + (uint8_t)'0';
 		}
-		/*
-		for (size_t y = 0; y < board.size(); y++) {
-			for (size_t x = 0; x < board[0].size(); x++) {
-				std::cout << board[y][x] << ' ';
-			}
-			std::cout << '\n';
-		}
-		*/
 	}
 
 	template<size_t N>
@@ -631,87 +518,7 @@ public:
 				}
 			}
 		}
-#if 0
-		for (uint32_t idx = 0; idx < board_size; idx++) {
-			Selection pick = selections[idx];
-			//uint32_t ty = selections[idx].row;//idx / board_len;
-			//uint32_t tx = selections[idx].col;// / idx % board_len;
-			//uint32_t tb = selections[idx].blk;//calculate_block(tx, ty, blk_len);
 
-			uint8_t* y_pick = &selection_cache[(0 * cache_size) + (pick.row * (cache_width))];
-			uint8_t* x_pick = &selection_cache[(1 * cache_size) + (pick.col * (cache_width))];
-			uint8_t* b_pick = &selection_cache[(2 * cache_size) + (pick.blk * (cache_width))];
-			uint8_t* m_pick = &invalid_mask[((pick.row * board_len + pick.col) * cache_width)];
-
-			uint32_t count = 0;
-
-			//m_pick[0] = (selections[idx].value > 0);
-			for (uint32_t digit = 1; digit < cache_width; digit++) {
-				m_pick[digit] = (pick.value > 0) ||
-					(y_pick[digit] || x_pick[digit] || b_pick[digit]);
-				count += m_pick[digit];
-			}
-
-			cell_count[(pick.row * board_len) + pick.col] = count;
-		}
-		/*
-		for (size_t idx = known_locations; idx < selections.size(); idx++) {
-			Selection pick = selections[idx];
-			uint32_t m_count = cell_count[(pick.row * board_len) + pick.col];
-
-			for (uint32_t xy = 0; xy < board_len; xy++) {
-				uint32_t bx = xy % blk_len;
-				uint32_t by = xy / blk_len;
-				uint32_t tx = blk_x + bx;
-				uint32_t ty = blk_y + by;
-				//s_pick[(((ty * board_len) + tx) * cache_width) + digit] |= cell_mask[(ty * board_len) + tx];
-			}
-
-		}
-		*/
-#endif		
-#if 0
-		for (size_t idx = known_locations; idx < selections.size(); idx++) {
-			uint8_t count = 0;
-			Selection pick = selections[idx];
-			uint8_t* y_pick = &selection_cache[(0 * cache_size) + (pick.row * (cache_width))];
-			uint8_t* x_pick = &selection_cache[(1 * cache_size) + (pick.col * (cache_width))];
-			uint8_t* b_pick = &selection_cache[(2 * cache_size) + (pick.blk * (cache_width))];
-
-			uint8_t* s_pick = &invalid_mask[((pick.row * board_len) + pick.col) * cache_width];
-			uint8_t* m_mask = &cell_mask[(pick.row * board_len) + pick.col];
-
-			for (uint32_t digit = 1; digit < cache_width; digit++) {
-				count += (y_pick[digit] || x_pick[digit] || b_pick[digit]);
-				s_pick[digit] = (y_pick[digit] || x_pick[digit] || b_pick[digit]);
-			}
-			/*
-			uint32_t blk_y = (pick.row / blk_len) * blk_len;
-			uint32_t blk_x = (pick.col / blk_len) * blk_len;
-			for (uint32_t digit = 1; digit < cache_width; digit++) {
-				for (uint32_t xy = 0; xy < board_len; xy++) {
-					uint32_t bx = xy % blk_len;
-					uint32_t by = xy / blk_len;
-					uint32_t tx = blk_x + bx;
-					uint32_t ty = blk_y + by;
-					s_pick[(((ty * board_len) + tx) * cache_width) + digit] |= cell_mask[(ty * board_len) + tx];
-				}
-				//uint32_t bx = (digit - 1) % blk_len;
-				//uint32_t by = (digit - 1) / blk_len;
-
-			}
-			*/
-			/*
-			for (uint32_t by = 0; by < blk_len; by++) {
-				for (uint32_t bx = 0; bx < blk_len; bx++) {
-
-				}
-			}
-			*/
-			cell_count[(pick.row * board_len) + pick.col] = count;
-		}
-#endif
-#if 1
 		for (size_t idx = known_locations; idx < selections.size(); idx++) {
 			uint8_t count = 0;
 			Selection pick = selections[idx];
@@ -733,63 +540,9 @@ public:
 
 				count += is_marked;
 				s_pick[digit] = (uint8_t)is_marked; //cell_mask at this point is 0
-
-				//i_info[i_info[0]+1] = digit;
-				//i_info[0] += !is_marked;
-				/*
-				if (!(y_pick[digit] || x_pick[digit] || b_pick[digit])) {
-					uint32_t marked = 0;
-					for (uint32_t xy = 0; xy < board_len; xy++) {
-						uint32_t bx = xy % blk_len;
-						uint32_t by = xy / blk_len;
-						uint32_t tx = blk_x + bx;
-						uint32_t ty = blk_y + by;
-						invalid_mask[(((ty * board_len) + tx) * cache_width) + digit] |= cell_mask[(ty * board_len) + tx];
-						//s_pick[(((ty * board_len) + tx) * cache_width) + digit] |= cell_mask[(ty * board_len) + tx];
-						marked += (bool)invalid_mask[(((ty * board_len) + tx) * cache_width) + digit];
-							//s_pick[(((ty * board_len) + tx) * cache_width) + digit];
-					}
-					if (marked >= (board_len - 1) && count < marked && s_pick[digit] == 0) {
-						count = marked;
-						for (uint32_t digit2 = 1; digit2 < digit; digit2++) {
-							//invalid_mask[(((pick.row * board_len) + pick.col) * cache_width) + digit]
-							s_pick[digit2] = 1;
-						}
-						for (uint32_t digit2 = digit + 1; digit2 < cache_width; digit2++) {
-							s_pick[digit2] = 1;
-						}
-						break;
-						//invalid_mask[(((pick.row * board_len) + pick.col) * cache_width) + digit] = 0;
-					}
-				}
-				*/
 			}
-			/*
-			uint32_t blk_y = (pick.row / blk_len) * blk_len;
-			uint32_t blk_x = (pick.col / blk_len) * blk_len;
-			for (uint32_t digit = 1; digit < cache_width; digit++) {
-				for (uint32_t xy = 0; xy < board_len; xy++) {
-					uint32_t bx = xy % blk_len;
-					uint32_t by = xy / blk_len;
-					uint32_t tx = blk_x + bx;
-					uint32_t ty = blk_y + by;
-					s_pick[(((ty * board_len) + tx) * cache_width) + digit] |= cell_mask[(ty * board_len) + tx];
-				}
-				//uint32_t bx = (digit - 1) % blk_len;
-				//uint32_t by = (digit - 1) / blk_len;
-
-			}
-			*/
-			/*
-			for (uint32_t by = 0; by < blk_len; by++) {
-				for (uint32_t bx = 0; bx < blk_len; bx++) {
-
-				}
-			}
-			*/
 			cell_count[(pick.row * board_len) + pick.col] = count;
 		}
-#endif
 
 		auto it = std::min_element(selections.begin() + known_locations, selections.end(), [&cell_count, board_len](Selection& lhs, Selection& rhs) {
 			return cell_count[(rhs.row * board_len) + rhs.col] < cell_count[(lhs.row * board_len) + lhs.col];
@@ -798,23 +551,6 @@ public:
 			std::swap(selections[known_locations], *it);
 		}
 
-		/*
-		for (size_t idx = known_locations; idx < selections.size(); idx++) {
-			Selection lhs = selections[known_locations];
-			Selection rhs = selections[idx];
-			uint32_t lhs_count = cell_count[(lhs.row * board_len) + lhs.col];
-			uint32_t rhs_count = cell_count[(rhs.row * board_len) + rhs.col];
-			if (rhs_count > lhs_count || rhs_count <= 1) {
-				std::swap(selections[known_locations], selections[idx]);
-			}
-			known_locations += (rhs_count <= 1);
-		}
-		*/
-		/*
-		std::sort(selections.begin() + known_locations, selections.end(), [&cell_count, board_len](Selection& lhs, Selection& rhs) {
-			return cell_count[(rhs.row * board_len) + rhs.col] < cell_count[(lhs.row * board_len) + lhs.col];
-		});
-		*/
 		size_t index = known_locations;
 		while (index >= known_locations && index < selections.size()) {
 			Selection& pick = selections[index];
@@ -823,10 +559,7 @@ public:
 			uint8_t* x_pick = &selection_cache[(1 * cache_size) + (pick.col * (cache_width))];
 			uint8_t* b_pick = &selection_cache[(2 * cache_size) + (pick.blk * (cache_width))];
 			uint8_t* s_mask = &invalid_mask[(((pick.row * board_len) + pick.col) * cache_width)];
-			//uint8_t* i_info = &init_vals[(((pick.row * board_len) + pick.col) * cache_width)];
-			//uint8_t* v_info = &init_vals[(((pick.row * board_len) + pick.col) * cache_width) + 1];
-			//
-			//uint32_t max_count = i_info[0];
+
 			for (size_t digit = pick.value; ++digit <= board_len;) {
 				if (s_mask[digit]) {
 					continue;
@@ -852,22 +585,12 @@ public:
 			--index;
 			if (index >= known_locations && index < selections.size()) {
 				// unmark cell
-				/*
-				uint8_t* y_prev = &selection_cache[(0 * cache_size) + ((uint32_t)pick.row * (cache_width)) + pick.value];
-				uint8_t* x_prev = &selection_cache[(1 * cache_size) + ((uint32_t)pick.col * (cache_width)) + pick.value];
-				uint8_t* b_prev = &selection_cache[(2 * cache_size) + ((uint32_t)pick.blk * (cache_width)) + pick.value];
-				*/
 				y_pick[pick.value] = 0;
 				x_pick[pick.value] = 0;
 				b_pick[pick.value] = 0;
 				//pick.idx = 0;
 				cell_mask[(pick.value * board_size) + (pick.row * board_len) + pick.col] = 0;
 				cell_mask[(pick.row * board_len) + pick.col] = 0;
-				/*
-				*y_prev = 0;
-				*x_prev = 0;
-				*b_prev = 0;
-				*/
 				pick.value = 0;
 				continue;
 			}
@@ -879,13 +602,8 @@ public:
 		next_stack:
 			//prevent backtracking if we can show we have no choices left
 			known_locations += (index == known_locations) && ((cell_count[(pick.row * board_len) + pick.col] == (board_len - 1)) || pick.value == board_len);
-			//cell_count[(pick.row * board_len) + pick.col]--;
-			//resort by the least# of choices left to increase speed
 			++index;
-			//do the dirty work of counting again
-			//uint32_t max_count = 0;
-			//bool bad_pick = false;
-
+			/*
 			for (size_t i = 0; i < board_size; i++) {
 				cell_count[i] = 0;
 			}
@@ -902,26 +620,9 @@ public:
 					cell_count[(pick.row * board_len) + pick.col] += is_marked;
 					s_pick[digit] = is_marked;
 				}
-				/*
-				for (size_t i = 0; i < board_size; i++) {
-					uint32_t y = i / board_len;
-					uint32_t x = i % board_len;
-					uint32_t b = calculate_block(x, y, blk_len);
-
-					uint8_t* y_pick = &selection_cache[(0 * cache_size) + (y * (cache_width))];
-					uint8_t* x_pick = &selection_cache[(1 * cache_size) + (x * (cache_width))];
-					uint8_t* b_pick = &selection_cache[(2 * cache_size) + (b * (cache_width))];
-					//((y * board_len) + x)
-					uint8_t* s_pick = &invalid_mask[i * cache_width];
-
-					bool is_marked = (y_pick[digit] || x_pick[digit] || b_pick[digit]);
-					cell_count[i] += is_marked;
-					s_pick[digit] = is_marked;
-				}
-				*/
 			}
-
-			/*
+			*/
+			
 			for (size_t idx = index; idx < selections.size(); idx++) {
 				uint8_t count = 0;
 				Selection pick = selections[idx];
@@ -940,7 +641,7 @@ public:
 				}
 				cell_count[(pick.row * board_len) + pick.col] = count;
 			}
-			*/
+			
 			auto it = std::min_element(selections.begin() + index, selections.end(), [&cell_count, board_len](Selection& lhs, Selection& rhs) {
 				return cell_count[(rhs.row * board_len) + rhs.col] < cell_count[(lhs.row * board_len) + lhs.col];
 				});
@@ -1006,12 +707,7 @@ public:
 						selections[tmp_idx].row = y;
 						selections[tmp_idx].col = x;
 						selections[tmp_idx].blk = b;
-						/*
-						cell_mask[(digit * board_size) + (y * board_len) + x] = 1;
-						cell_mask[(y * board_len) + x] = 1;
-						for (uint32_t digit = 1; digit < cache_width; digit++)
-							invalid_mask[(((y * board_len) + x) * cache_width) + digit] = 1;
-							*/
+
 						tmp_idx++;
 
 						bitwise_cache[(0 * board_len) + y][digit] = 1;
@@ -1382,7 +1078,7 @@ public:
 			_bit_masks.emplace_back(0);
 		}
 
-		uint32_t cell_count_size = board_size * 2;
+		uint32_t cell_count_size = board_size + ((board_len + 1) * (board_len + 1));
 		_cell_count.clear();
 		_cell_count.reserve(cell_count_size);
 		for (size_t i = 0; i < cell_count_size; i++) {
@@ -1467,6 +1163,22 @@ public:
 					_bit_masks[cell_idx + (digit * (board_len + 1)) + pick.blk][pick.blk_idx] = combined[digit];
 				}
 			}
+			//combine all masks once
+			uint32_t tmp_blk = 0;
+			uint32_t tmp_limit = ((board_len+1) * (board_len + 1));
+			for (size_t tmp = (1 * (board_len + 1)); tmp < tmp_limit; tmp++) {
+				std::bitset<_cache_width>& blk_mask = _bit_masks[cell_idx + tmp];
+				blk_mask |= _bit_masks[cell_idx + tmp_blk];
+				tmp_blk = (tmp_blk + 1) % (board_len + 1);
+
+				uint64_t* ptr = (uint64_t*)&blk_mask;
+				uint64_t count = _mm_popcnt_u64(*ptr);
+				count += _mm_popcnt_u64(*(ptr + 1));
+				count += _mm_popcnt_u64(*(ptr + 2));
+				count += _mm_popcnt_u64(*(ptr + 3));
+
+				_cell_count[board_size + tmp] = count;
+			}
 			//now all the required masks are filled, we can now do two checks at once
 			for (size_t idx = known_locations; idx < board_size; idx++) {
 				SelectionInfo pick = _selections[idx];
@@ -1491,15 +1203,21 @@ public:
 					std::bitset<_cache_width> blk_mask = _bit_masks[cell_idx + (digit * (board_len + 1)) + pick.blk] |
 						_bit_masks[cell_idx + (0 * (board_len + 1)) + pick.blk];
 						*/
+					/*
 					std::bitset<_cache_width>& blk_mask = _bit_masks[cell_idx + (digit * (board_len + 1)) + pick.blk];
 					blk_mask |= _bit_masks[cell_idx + (0 * (board_len + 1)) + pick.blk];
-
+					*/
+					uint32_t blk_flat_idx = (digit * (board_len + 1)) + pick.blk;
+					std::bitset<_cache_width>& blk_mask = _bit_masks[cell_idx + blk_flat_idx];
+					uint8_t current_count = _cell_count[board_size + blk_flat_idx];
+					/*
 					uint64_t* blk_ptr = (uint64_t*)&blk_mask;
 
 					uint64_t current_count = _mm_popcnt_u64(*blk_ptr);
 					current_count += _mm_popcnt_u64(*(blk_ptr + 1));
 					current_count += _mm_popcnt_u64(*(blk_ptr + 2));
 					current_count += _mm_popcnt_u64(*(blk_ptr + 3));
+					*/
 					/*
 					size_t current_count = blk_mask.count();
 					*/
@@ -1516,10 +1234,9 @@ public:
 						n_count += _mm_popcnt_u64(*(ptr + 1));
 						n_count += _mm_popcnt_u64(*(ptr + 2));
 						n_count += _mm_popcnt_u64(*(ptr + 3));
+						//must be > than count no need to conditionally move
 						count = n_count;
 					}
-					//_bit_masks[]
-					//_bit_masks[cell_idx + (digit * (board_len + 1)) + pick.blk][pick.blk_idx] = combined[digit];
 				}
 
 				_cell_count[(pick.row * board_len) + pick.col] = count;
@@ -1638,6 +1355,26 @@ public:
 						_bit_masks[cell_idx + (digit * (board_len + 1)) + pick.blk][pick.blk_idx] = combined[digit];
 					}
 				}
+
+				//combine all masks once
+				uint32_t tmp_blk = 0;
+				const uint32_t mask_len = board_len + 1;
+				uint32_t tmp_limit = (mask_len * mask_len);
+
+				for (size_t tmp = (1 * (board_len + 1)); tmp < tmp_limit; tmp++) {
+					std::bitset<_cache_width>& blk_mask = _bit_masks[cell_idx + tmp];
+					blk_mask |= _bit_masks[cell_idx + tmp_blk];
+					tmp_blk = (tmp_blk + 1) % mask_len;
+
+					uint64_t* ptr = (uint64_t*)&blk_mask;
+					uint64_t count = _mm_popcnt_u64(*ptr);
+					count += _mm_popcnt_u64(*(ptr + 1));
+					count += _mm_popcnt_u64(*(ptr + 2));
+					count += _mm_popcnt_u64(*(ptr + 3));
+
+					_cell_count[board_size + tmp] = count;
+				}
+
 				//now all the required masks are filled, we can now do two checks at once
 				for (size_t idx = index; idx < board_size; idx++) {
 					SelectionInfo pick = _selections[idx];
@@ -1656,14 +1393,20 @@ public:
 
 					//now we check spacing constraints
 					for (size_t digit = 1; digit < board_len; digit++) {
-						std::bitset<_cache_width>& blk_mask = _bit_masks[cell_idx + (digit * (board_len + 1)) + pick.blk]
-							| _bit_masks[cell_idx + (0 * (board_len + 1)) + pick.blk];
-						uint64_t* blk_ptr = (uint64_t*)&blk_mask;
+						//std::bitset<_cache_width>& blk_mask = _bit_masks[cell_idx + (digit * (board_len + 1)) + pick.blk];
+							//| _bit_masks[cell_idx + (0 * (board_len + 1)) + pick.blk];
 
+						uint32_t blk_flat_idx = (digit * (board_len + 1)) + pick.blk;
+						std::bitset<_cache_width>& blk_mask = _bit_masks[cell_idx + blk_flat_idx];
+						uint8_t current_count = _cell_count[board_size + blk_flat_idx];
+
+						/*
+						uint64_t* blk_ptr = (uint64_t*)&blk_mask;
 						uint64_t current_count = _mm_popcnt_u64(*blk_ptr);
 						current_count += _mm_popcnt_u64(*(blk_ptr + 1));
 						current_count += _mm_popcnt_u64(*(blk_ptr + 2));
 						current_count += _mm_popcnt_u64(*(blk_ptr + 3));
+						*/
 						/*
 						size_t current_count = blk_mask.count();
 						*/
